@@ -66,11 +66,11 @@ jobs:
         with:
           terraform_version: 1.7.5
 
-      - name: Terraform Import
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: |
-          terraform import \
-            aws_secretsmanager_secret.shopify_admin arn:aws:secretsmanager:us-west-2:438465144115:secret:shopify/admin-xlmuwX
+      # - name: Terraform Import
+      #   working-directory: ${{ env.TF_WORKING_DIR }}
+      #   run: |
+      #     terraform import \
+      #       aws_secretsmanager_secret.shopify_admin arn:aws:secretsmanager:us-west-2:438465144115:secret:shopify/admin-xlmuwX
 
 
       - name: Terraform Init (S3 backend)
