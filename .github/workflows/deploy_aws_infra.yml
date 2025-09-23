@@ -1,0 +1,71 @@
+name: Run AWS Login with OIDC
+
+# Trigger - 5
+on: [push] 
+
+
+permissions:
+  id-token: write
+  contents: read
+  
+jobs:
+  AWS-login-and-test:
+    runs-on: ubuntu-latest
+
+    # Sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Checkout
+      # Checks-out the repository under $GITHUB_WORKSPACE, so your job can access it
+        uses: actions/checkout@v4
+
+      # Runs a single command using the runners shell
+      #- name: 'Set the Web ID Token Path'
+      #  run: |
+      #    echo 'The runner command shell is working ...'
+      #    echo "AWS_WEB_IDENTITY_TOKEN_FILE=/usr/tf_user/secrets/web-identity-token" >> $GITHUB_ENV
+      
+      # Sets up Terraform on the runner    
+      #- name: HashiCorp - Setup Terraform on runner
+      #  uses: hashicorp/setup-terraform@v2.0.3
+      #  with:
+      #    terraform_version: 'latest'
+      #   terraform_wrapper: 'true'
+          
+      # Get AWS Role With WebIdentity              
+      - name: '"Configure AWS Credentials" Action for GitHub Actions on runner'
+        uses: aws-actions/configure-aws-credentials@v4.1.0
+        with:
+          aws-region: 'us-west-2' 
+          role-to-assume: arn:aws:iam::438465144115:role/GitHubActions_PowerUser
+          audience: sts.amazonaws.com
+          retry-max-attempts: 3
+
+      - name: Read OIDC Token
+        run: echo $ACTIONS_ID_TOKEN_REQUEST_URL
+      - name: Read OIDC Token
+        run: echo $ACTIONS_ID_TOKEN_REQUEST_TOKEN
+   
+      # Run the Terraform main.tf  
+     # - name: Run Terraform      
+     #  run: |
+     #     cat $GITHUB_ENV
+     #     terraform init
+     #     terraform plan
+     #     terraform apply -auto-approve
+    #    # aws secretsmanager create-secret --name demo-secret --description "demo secret description" --secret-string "demo$ecret1234"
+
+    #  - name: AWS Secrets Manager GitHub Action
+        # You may pin to the exact commit or the version.
+        # uses: aws-actions/aws-secretsmanager-get-secrets@1d6311ab61b4856de027ff508aac818ddc1e141b
+     #   uses: aws-actions/aws-secretsmanager-get-secrets@v2.0.7
+    #    with:
+          # One or more secret names, secret ARNs, or secret prefixes to retrieve
+    #      secret-ids: 'arn:aws:secretsmanager:us-west-2:438465144115:secret:demo-secret-LE0Sh5' 
+          # (Optional) If true, JSON secrets will be deserialized, creating a secret environment variable for each key-value pair.
+    #      parse-json-secrets: 'true'
+          # (Optional) Transforms environment variable name. Options: uppercase, lowercase, none. Default value: uppercase.
+    #      name-transformation: 'uppercase'
+           
+          
+
+  
