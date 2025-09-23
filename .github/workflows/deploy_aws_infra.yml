@@ -35,13 +35,6 @@ jobs:
         run: echo $ACTIONS_ID_TOKEN_REQUEST_URL
       - name: Read OIDC Token
         run: echo $ACTIONS_ID_TOKEN_REQUEST_TOKEN
-   
-      # - name: Configure AWS (access keys)
-      #   uses: aws-actions/configure-aws-credentials@v4
-      #   with:
-      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     aws-region: ${{ env.AWS_REGION }}
 
       - name: Ensure S3 bucket and DynamoDB table for Terraform state
         shell: bash
@@ -88,7 +81,7 @@ jobs:
 
       - name: Terraform Import
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform import aws_secretsmanager_secret.shopify_admin
+        run: terraform import aws_secretsmanager_secret.shopify_admin arn:aws:secretsmanager:us-west-2:438465144115:secret:shopify/admin-xlmuwX
 
       - name: Terraform Plan
         id: plan
