@@ -1,6 +1,6 @@
 name: Run AWS Login with OIDC and Deploy AWS MCP Infrastructure
 
-# Trigger - 9
+# Trigger - 1
 on: [push] 
 
 
@@ -83,80 +83,54 @@ jobs:
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform import aws_secretsmanager_secret.shopify_admin arn:aws:secretsmanager:us-west-2:438465144115:secret:shopify/admin-xlmuwX
 
-      - name: Terraform Plan
-        id: plan
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        env:
-          TF_VAR_shopify_myshopify_domain: ${{ secrets.SHOPIFY_MYSHOPIFY_DOMAIN }}
-          TF_VAR_mcp_bearer: ${{ secrets.MCP_BEARER }}
-          TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
-        run: terraform plan -out=tfplan
+      # - name: Terraform Plan
+      #   id: plan
+      #   working-directory: ${{ env.TF_WORKING_DIR }}
+      #   env:
+      #     TF_VAR_shopify_myshopify_domain: ${{ secrets.SHOPIFY_MYSHOPIFY_DOMAIN }}
+      #     TF_VAR_mcp_bearer: ${{ secrets.MCP_BEARER }}
+      #     TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
+      #   run: terraform plan -out=tfplan
 
-      - name: Terraform Apply
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform apply -auto-approve tfplan
+      # - name: Terraform Apply
+      #   working-directory: ${{ env.TF_WORKING_DIR }}
+      #   run: terraform apply -auto-approve tfplan
 
-      - name: Grab Terraform outputs
-        id: tfout
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: |
-          echo "secret_name=$(terraform output -raw secret_name)" >> $GITHUB_OUTPUT
-          echo "mcp_full_url=$(terraform output -raw mcp_full_url)" >> $GITHUB_OUTPUT
+      # - name: Grab Terraform outputs
+      #   id: tfout
+      #   working-directory: ${{ env.TF_WORKING_DIR }}
+      #   run: |
+      #     echo "secret_name=$(terraform output -raw secret_name)" >> $GITHUB_OUTPUT
+      #     echo "mcp_full_url=$(terraform output -raw mcp_full_url)" >> $GITHUB_OUTPUT
 
-      - name: Put Shopify Admin token into Secrets Manager
-        shell: bash
-        env:
-          SECRET_NAME: ${{ steps.tfout.outputs.secret_name }}
-          SHOPIFY_ADMIN_TOKEN: ${{ secrets.SHOPIFY_ADMIN_TOKEN }}
-        run: |
-          set -euo pipefail
-          aws secretsmanager put-secret-value \
-            --secret-id "${SECRET_NAME}" \
-            --secret-string "${SHOPIFY_ADMIN_TOKEN}"
+      # - name: Put Shopify Admin token into Secrets Manager
+      #   shell: bash
+      #   env:
+      #     SECRET_NAME: ${{ steps.tfout.outputs.secret_name }}
+      #     SHOPIFY_ADMIN_TOKEN: ${{ secrets.SHOPIFY_ADMIN_TOKEN }}
+      #   run: |
+      #     set -euo pipefail
+      #     aws secretsmanager put-secret-value \
+      #       --secret-id "${SECRET_NAME}" \
+      #       --secret-string "${SHOPIFY_ADMIN_TOKEN}"
 
-      - name: Smoke test MCP (tools/list)
-        shell: bash
-        env:
-          MCP_URL: ${{ steps.tfout.outputs.mcp_full_url }}
-          MCP_BEARER: ${{ secrets.MCP_BEARER }}
-        run: |
-          set -euo pipefail
-          echo "Hitting: ${MCP_URL}"
-          curl -sX POST "${MCP_URL}" \
-            -H "Authorization: Bearer ${MCP_BEARER}" \
-            -H "Content-Type: application/json" \
-            -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | jq .
+      # - name: Smoke test MCP (tools/list)
+      #   shell: bash
+      #   env:
+      #     MCP_URL: ${{ steps.tfout.outputs.mcp_full_url }}
+      #     MCP_BEARER: ${{ secrets.MCP_BEARER }}
+      #   run: |
+      #     set -euo pipefail
+      #     echo "Hitting: ${MCP_URL}"
+      #     curl -sX POST "${MCP_URL}" \
+      #       -H "Authorization: Bearer ${MCP_BEARER}" \
+      #       -H "Content-Type: application/json" \
+      #       -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | jq .
 
-      - name: Show connector URL
-        run: |
-          echo ""
+      # - name: Show connector URL
+      #   run: |
+      #     echo ""
       
-      
-      
-      
-      
-      
-      
-      # Run the Terraform main.tf  
-     # - name: Run Terraform      
-     #  run: |
-     #     cat $GITHUB_ENV
-     #     terraform init
-     #     terraform plan
-     #     terraform apply -auto-approve
-    #    # aws secretsmanager create-secret --name demo-secret --description "demo secret description" --secret-string "demo$ecret1234"
-
-    #  - name: AWS Secrets Manager GitHub Action
-        # You may pin to the exact commit or the version.
-        # uses: aws-actions/aws-secretsmanager-get-secrets@1d6311ab61b4856de027ff508aac818ddc1e141b
-     #   uses: aws-actions/aws-secretsmanager-get-secrets@v2.0.7
-    #    with:
-          # One or more secret names, secret ARNs, or secret prefixes to retrieve
-    #      secret-ids: 'arn:aws:secretsmanager:us-west-2:438465144115:secret:demo-secret-LE0Sh5' 
-          # (Optional) If true, JSON secrets will be deserialized, creating a secret environment variable for each key-value pair.
-    #      parse-json-secrets: 'true'
-          # (Optional) Transforms environment variable name. Options: uppercase, lowercase, none. Default value: uppercase.
-    #      name-transformation: 'uppercase'
            
           
 
