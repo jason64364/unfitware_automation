@@ -14,6 +14,7 @@ jobs:
 
     env:
       TF_STATE_BUCKET: tf-state-unfitware-2025-1
+      TF_STATE_DYNAMODB_TABLE: tf-state-locks
 
     # Sequence of tasks that will be executed as part of the job
     steps:
