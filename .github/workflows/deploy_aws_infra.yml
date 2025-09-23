@@ -1,6 +1,6 @@
 name: Run AWS Login with OIDC and Deploy AWS MCP Infrastructure
 
-# Trigger - 7
+# Trigger - 8
 on: [push] 
 
 
