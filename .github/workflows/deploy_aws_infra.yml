@@ -12,6 +12,9 @@ jobs:
   AWS-login-and-test:
     runs-on: ubuntu-latest
 
+    env:
+      TF_STATE_BUCKET: tf-state-unfitware-2025-1
+
     # Sequence of tasks that will be executed as part of the job
     steps:
       - name: Checkout
