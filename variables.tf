@@ -7,12 +7,13 @@ variable "project_name" {
 variable "aws_region" {
   description = "AWS region"
   type        = string
-  default     = "us-west-2"
+  default     = "us-west-1"
 }
 
 variable "shopify_myshopify_domain" {
   description = "Your store's myshopify domain (NOT custom domain), e.g., unfitware.myshopify.com"
   type        = string
+  default     = "unfitware.myshopify.com"
 }
 
 variable "shopify_api_version" {
