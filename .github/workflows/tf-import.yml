@@ -1,37 +1,40 @@
-name: Deploy Shopify MCP on AWS
+name: Run AWS Login with OIDC and Deploy AWS MCP Infrastructure
 
-on:
-  workflow_dispatch:
-  push:
-    branches: [ "main" ]
+# Trigger - 9
+on: [push] 
+
 
 permissions:
   id-token: write
   contents: read
-
-# permissions:
-#   contents: read
-
-env:
-  TF_WORKING_DIR: .
-  AWS_REGION: ${{ secrets.AWS_REGION }}
-  TF_STATE_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
-  TF_STATE_DYNAMODB_TABLE: ${{ secrets.TF_STATE_DYNAMODB_TABLE }}
-
+  
 jobs:
-  deploy:
+  AWS-login-and-test:
     runs-on: ubuntu-latest
 
+    env:
+      TF_STATE_BUCKET: tf-state-unfitware-2025-1
+      TF_STATE_DYNAMODB_TABLE: tf-state-locks
+
+    # Sequence of tasks that will be executed as part of the job
     steps:
       - name: Checkout
+      # Checks-out the repository under $GITHUB_WORKSPACE, so your job can access it
         uses: actions/checkout@v4
-
-      - name: Configure AWS (access keys)
-        uses: aws-actions/configure-aws-credentials@v4
+          
+      # Get AWS Role With WebIdentity              
+      - name: '"Configure AWS Credentials" Action for GitHub Actions on runner'
+        uses: aws-actions/configure-aws-credentials@v4.1.0
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: 'us-west-2' 
+          role-to-assume: arn:aws:iam::438465144115:role/GitHubActions_PowerUser
+          audience: sts.amazonaws.com
+          retry-max-attempts: 3
+
+      - name: Read OIDC Token
+        run: echo $ACTIONS_ID_TOKEN_REQUEST_URL
+      - name: Read OIDC Token
+        run: echo $ACTIONS_ID_TOKEN_REQUEST_TOKEN
 
       - name: Ensure S3 bucket and DynamoDB table for Terraform state
         shell: bash
@@ -75,6 +78,10 @@ jobs:
       - name: Terraform Validate
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform validate
+
+      - name: Terraform Import
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform import aws_secretsmanager_secret.shopify_admin arn:aws:secretsmanager:us-west-2:438465144115:secret:shopify/admin-xlmuwX
 
       - name: Terraform Plan
         id: plan
@@ -123,8 +130,34 @@ jobs:
       - name: Show connector URL
         run: |
           echo ""
-          echo "✅ Add this URL in ChatGPT → Settings → Connectors → Add custom (MCP):"
-          echo "   ${{ steps.tfout.outputs.mcp_full_url }}"
-          echo ""
-          echo "   Add header: Authorization: Bearer ${{ secrets.MCP_BEARER }}"
+      
+      
+      
+      
+      
+      
+      
+      # Run the Terraform main.tf  
+     # - name: Run Terraform      
+     #  run: |
+     #     cat $GITHUB_ENV
+     #     terraform init
+     #     terraform plan
+     #     terraform apply -auto-approve
+    #    # aws secretsmanager create-secret --name demo-secret --description "demo secret description" --secret-string "demo$ecret1234"
 
+    #  - name: AWS Secrets Manager GitHub Action
+        # You may pin to the exact commit or the version.
+        # uses: aws-actions/aws-secretsmanager-get-secrets@1d6311ab61b4856de027ff508aac818ddc1e141b
+     #   uses: aws-actions/aws-secretsmanager-get-secrets@v2.0.7
+    #    with:
+          # One or more secret names, secret ARNs, or secret prefixes to retrieve
+    #      secret-ids: 'arn:aws:secretsmanager:us-west-2:438465144115:secret:demo-secret-LE0Sh5' 
+          # (Optional) If true, JSON secrets will be deserialized, creating a secret environment variable for each key-value pair.
+    #      parse-json-secrets: 'true'
+          # (Optional) Transforms environment variable name. Options: uppercase, lowercase, none. Default value: uppercase.
+    #      name-transformation: 'uppercase'
+           
+          
+
+  
