@@ -21,19 +21,6 @@ jobs:
       - name: Checkout
       # Checks-out the repository under $GITHUB_WORKSPACE, so your job can access it
         uses: actions/checkout@v4
-
-      # Runs a single command using the runners shell
-      #- name: 'Set the Web ID Token Path'
-      #  run: |
-      #    echo 'The runner command shell is working ...'
-      #    echo "AWS_WEB_IDENTITY_TOKEN_FILE=/usr/tf_user/secrets/web-identity-token" >> $GITHUB_ENV
-      
-      # Sets up Terraform on the runner    
-      #- name: HashiCorp - Setup Terraform on runner
-      #  uses: hashicorp/setup-terraform@v2.0.3
-      #  with:
-      #    terraform_version: 'latest'
-      #   terraform_wrapper: 'true'
           
       # Get AWS Role With WebIdentity              
       - name: '"Configure AWS Credentials" Action for GitHub Actions on runner'
@@ -99,7 +86,7 @@ jobs:
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform validate
 
-        - name: Terraform Import
+      - name: Terraform Import
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform import aws_secretsmanager_secret.shopify_admin
 
