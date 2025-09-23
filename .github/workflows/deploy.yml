@@ -6,7 +6,11 @@ on:
     branches: [ "main" ]
 
 permissions:
+  id-token: write
   contents: read
+
+# permissions:
+#   contents: read
 
 env:
   TF_WORKING_DIR: .
