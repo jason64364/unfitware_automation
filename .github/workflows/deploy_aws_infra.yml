@@ -1,6 +1,6 @@
 name: Run AWS Login with OIDC and Deploy AWS MCP Infrastructure
 
-# Trigger - 16
+# Trigger - 17
 on: [push] 
 
 
@@ -74,7 +74,7 @@ jobs:
 
 
       - name: Terraform Init (S3 backend)
-        working-directory: ${{ env.TF_WORKING_DIR }}
+        # working-directory: ${{ env.TF_WORKING_DIR }}
         run: |
           terraform init \
             -backend-config="bucket=${TF_STATE_BUCKET}" \
