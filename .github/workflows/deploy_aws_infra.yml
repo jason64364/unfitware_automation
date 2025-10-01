@@ -108,7 +108,7 @@ jobs:
 
       - name: Terraform Apply
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform apply -auto-approve tfplan -lock-timeout=5m tfplan
+        run: terraform apply -help -auto-approve tfplan -lock-timeout=5m tfplan
 
       - name: Grab Terraform outputs
         id: tfout
