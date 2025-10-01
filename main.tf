@@ -18,6 +18,10 @@ provider "aws" {
   region = var.aws_region
 }
 
+module "mcp" {
+  source = "./modules/mcp" ...
+}
+
 ############################
 # Secrets Manager (container only — value added later in console)
 ############################
