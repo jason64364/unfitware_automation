@@ -3,6 +3,9 @@ name: Run AWS Login with OIDC and Deploy AWS MCP Infrastructure
 # Trigger - 17
 on: [push] 
 
+concurrency:
+  group: tf-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   id-token: write
@@ -15,6 +18,7 @@ jobs:
     env:
       TF_STATE_BUCKET: tf-state-unfitware-2025-1
       TF_STATE_DYNAMODB_TABLE: tf-state-locks
+      TF_WORKING_DIR: .
 
     # Sequence of tasks that will be executed as part of the job
     steps:
@@ -31,10 +35,10 @@ jobs:
           audience: sts.amazonaws.com
           retry-max-attempts: 3
 
-      - name: Read OIDC Token
-        run: echo $ACTIONS_ID_TOKEN_REQUEST_URL
-      - name: Read OIDC Token
-        run: echo $ACTIONS_ID_TOKEN_REQUEST_TOKEN
+      # - name: Read OIDC Token
+      #   run: echo $ACTIONS_ID_TOKEN_REQUEST_URL
+      # - name: Read OIDC Token
+      #   run: echo $ACTIONS_ID_TOKEN_REQUEST_TOKEN
 
       - name: Ensure S3 bucket and DynamoDB table for Terraform state
         shell: bash
@@ -78,9 +82,15 @@ jobs:
         run: |
           terraform init \
             -backend-config="bucket=${TF_STATE_BUCKET}" \
-            -backend-config="key=state/shopify-mcp.tfstate" \
+            -backend-config="key=state/${GITHUB_REF_NAME}shopify-mcp.tfstate" \
             -backend-config="region=${AWS_REGION}" \
             -backend-config="dynamodb_table=${TF_STATE_DYNAMODB_TABLE}"
+
+      - name: Select workspace
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: |
+          terraform workspace select "${GITHUB_REF_NAME}" || terraform workspace new "${GITHUB_REF_NAME}"
+            
 
       - name: Terraform Validate
         working-directory: ${{ env.TF_WORKING_DIR }}
@@ -94,11 +104,11 @@ jobs:
           TF_VAR_shopify_myshopify_domain: ${{ secrets.SHOPIFY_MYSHOPIFY_DOMAIN }}
           TF_VAR_mcp_bearer: ${{ secrets.MCP_BEARER }}
           TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
-        run: terraform plan -out=tfplan
+        run: terraform plan -out=tfplan -lock-timeout=5m
 
       - name: Terraform Apply
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform apply -auto-approve tfplan
+        run: terraform apply -auto-approve tfplan -lock-timeout=5m tfplan
 
       - name: Grab Terraform outputs
         id: tfout
