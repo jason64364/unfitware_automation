@@ -31,10 +31,10 @@ jobs:
           audience: sts.amazonaws.com
           retry-max-attempts: 3
 
-      - name: Read OIDC Token
-        run: echo $ACTIONS_ID_TOKEN_REQUEST_URL
-      - name: Read OIDC Token
-        run: echo $ACTIONS_ID_TOKEN_REQUEST_TOKEN
+      # - name: Read OIDC Token
+      #   run: echo $ACTIONS_ID_TOKEN_REQUEST_URL
+      # - name: Read OIDC Token
+      #   run: echo $ACTIONS_ID_TOKEN_REQUEST_TOKEN
 
       - name: Ensure S3 bucket and DynamoDB table for Terraform state
         shell: bash
@@ -83,14 +83,14 @@ jobs:
       #   working-directory: ${{ env.TF_WORKING_DIR }}
       #   run: terraform import aws_secretsmanager_secret.shopify_admin arn:aws:secretsmanager:us-west-2:438465144115:secret:shopify/admin-xlmuwX
 
-      # - name: Terraform Plan
-      #   id: plan
-      #   working-directory: ${{ env.TF_WORKING_DIR }}
-      #   env:
-      #     TF_VAR_shopify_myshopify_domain: ${{ secrets.SHOPIFY_MYSHOPIFY_DOMAIN }}
-      #     TF_VAR_mcp_bearer: ${{ secrets.MCP_BEARER }}
-      #     TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
-      #   run: terraform plan -out=tfplan
+      - name: Terraform Plan
+        id: plan
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        env:
+          TF_VAR_shopify_myshopify_domain: ${{ secrets.SHOPIFY_MYSHOPIFY_DOMAIN }}
+          TF_VAR_mcp_bearer: ${{ secrets.MCP_BEARER }}
+          TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
+        run: terraform plan -out=tfplan
 
       # - name: Terraform Apply
       #   working-directory: ${{ env.TF_WORKING_DIR }}
