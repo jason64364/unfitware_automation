@@ -19,7 +19,7 @@ provider "aws" {
 }
 
 module "mcp" {
-  source = "./modules/mcp/outputs.tf"
+  source = "./modules/mcp/"
 }
 
 ############################
