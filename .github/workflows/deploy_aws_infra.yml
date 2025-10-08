@@ -47,6 +47,7 @@ jobs:
           BUCKET="${TF_STATE_BUCKET}"
           TABLE="${TF_STATE_DYNAMODB_TABLE}"
           REGION="${AWS_REGION}"
+          WORKSPACE="main"
 
           # Create S3 bucket if missing
           if ! aws s3api head-bucket --bucket "$BUCKET" 2>/dev/null; then
@@ -78,7 +79,7 @@ jobs:
 
 
       - name: Terraform Init (S3 backend)
-        # working-directory: ${{ env.TF_WORKING_DIR }}
+        # working-directory: ${{ env.TF_WORKING_DIR}}
         run: |
           terraform init \
             -backend-config="bucket=${TF_STATE_BUCKET}" \
@@ -86,10 +87,26 @@ jobs:
             -backend-config="region=${AWS_REGION}" \
             -backend-config="dynamodb_table=${TF_STATE_DYNAMODB_TABLE}"
 
-      - name: Select workspace
+      - name: Select or create Terraform workspace
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: |
-          terraform workspace select "${GITHUB_REF_NAME}" || terraform workspace new "${GITHUB_REF_NAME}"
+          set -euo pipefail
+          WORKSPACE="${GITHUB_REF_NAME}"
+
+          # List all workspaces and check if the target exists
+          if terraform workspace list | grep -qE "^\*?\\s*${WORKSPACE}\$"; then
+            echo "Workspace '${WORKSPACE}' exists. Selecting it..."
+            terraform workspace select "${WORKSPACE}"
+          else
+            echo "🆕 Workspace '${WORKSPACE}' does not exist. Creating it..."
+            terraform workspace new "${WORKSPACE}"
+          fi
+     
+
+      # - name: Select workspace
+      #   working-directory: ${{ env.TF_WORKING_DIR }}
+      #   run: |
+      #     terraform workspace select "${GITHUB_REF_NAME}" || terraform workspace new "${GITHUB_REF_NAME}"
             
 
       - name: Terraform Validate
