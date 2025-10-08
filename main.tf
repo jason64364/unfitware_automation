@@ -18,7 +18,7 @@ provider "aws" {
   region = var.aws_region
 }
 
-module "mcp" {
+modules "mcp" {
   source = "./modules/mcp/"
 }
 
