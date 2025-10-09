@@ -127,12 +127,12 @@ jobs:
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform apply -help -auto-approve tfplan -lock-timeout=5m tfplan
 
-      - name: Grab Terraform outputs
-        id: tfout
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: |
-          echo "secret_name=$(terraform output -raw secret_name)" >> $GITHUB_OUTPUT
-          echo "mcp_full_url=$(terraform output -raw mcp_full_url)" >> $GITHUB_OUTPUT
+      # - name: Grab Terraform outputs
+      #   id: tfout
+      #   working-directory: ${{ env.TF_WORKING_DIR }}
+      #   run: |
+      #     echo "secret_name=$(terraform output -raw secret_name)" >> $GITHUB_OUTPUT
+      #     echo "mcp_full_url=$(terraform output -raw mcp_full_url)" >> $GITHUB_OUTPUT
 
       - name: Put Shopify Admin token into Secrets Manager
         shell: bash
