@@ -5,13 +5,11 @@ output "api_invoke_url" {
 
 output "mcp_full_url" {
   description = "Full POST URL for MCP"
-#  value      = "${aws_apigatewayv2_api.http.api_endpoint}/mcp"
-   value      = module.mcp.mcp_full_url
+  value      = "${aws_apigatewayv2_api.http.api_endpoint}/mcp"
 }
 
 output "secret_name" {
   description = "Secrets Manager secret name where you must set the Admin token"
-#  value      = aws_secretsmanager_secret.shopify_admin.name
-   value      = module.mcp.secret_name
+  value      = aws_secretsmanager_secret.shopify_admin.name
 }
 
