@@ -1,11 +1,8 @@
 name: Run AWS Login with OIDC and Deploy AWS MCP Infrastructure
 
-# Trigger - 38
+# Trigger - 1
 on: [push] 
 
-concurrency:
-  group: tf-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 permissions:
   id-token: write
@@ -18,7 +15,6 @@ jobs:
     env:
       TF_STATE_BUCKET: tf-state-unfitware-2025-1
       TF_STATE_DYNAMODB_TABLE: tf-state-locks
-      TF_WORKING_DIR: .
 
     # Sequence of tasks that will be executed as part of the job
     steps:
@@ -47,12 +43,11 @@ jobs:
           BUCKET="${TF_STATE_BUCKET}"
           TABLE="${TF_STATE_DYNAMODB_TABLE}"
           REGION="${AWS_REGION}"
-          WORKSPACE="main"
 
           # Create S3 bucket if missing
           if ! aws s3api head-bucket --bucket "$BUCKET" 2>/dev/null; then
-            aws s3api create-bucket --bucket "$BUCKET" --region "$REGION" --create-bucket-configuration LocationConstraint="$REGION"
-          #    $( [ "$REGION" != "us-west-2" ] && echo --create-bucket-configuration LocationConstraint="$REGION" )
+            aws s3api create-bucket --bucket "$BUCKET" --region "$REGION" \
+              $( [ "$REGION" != "us-east-1" ] && echo --create-bucket-configuration LocationConstraint="$REGION" )
           fi
           aws s3api put-bucket-versioning --bucket "$BUCKET" --versioning-configuration Status=Enabled
 
@@ -71,49 +66,23 @@ jobs:
         with:
           terraform_version: 1.7.5
 
-      # - name: Terraform Import
-      #   working-directory: ${{ env.TF_WORKING_DIR }}
-      #   run: |
-      #     terraform import \
-      #       aws_secretsmanager_secret.shopify_admin arn:aws:secretsmanager:us-west-2:438465144115:secret:shopify/admin-xlmuwX
-
-
       - name: Terraform Init (S3 backend)
-        # working-directory: ${{ env.TF_WORKING_DIR}}
+        working-directory: ${{ env.TF_WORKING_DIR }}
         run: |
           terraform init \
             -backend-config="bucket=${TF_STATE_BUCKET}" \
-            -backend-config="key=state/${GITHUB_REF_NAME}shopify-mcp.tfstate" \
+            -backend-config="key=state/shopify-mcp.tfstate" \
             -backend-config="region=${AWS_REGION}" \
             -backend-config="dynamodb_table=${TF_STATE_DYNAMODB_TABLE}"
-
-      - name: Select or create Terraform workspace
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: |
-          set -euo pipefail
-          WORKSPACE="${GITHUB_REF_NAME}"
-
-          # List all workspaces and check if the target exists
-          if terraform workspace list | grep -qE "^\*?\\s*${WORKSPACE}\$"; then
-            echo "Workspace '${WORKSPACE}' exists. Selecting it..."
-            terraform workspace select "${WORKSPACE}"
-          else
-            echo "🆕 Workspace '${WORKSPACE}' does not exist. Creating it..."
-            terraform workspace new "${WORKSPACE}"
-          fi
-     
-
-      # - name: Select workspace
-      #   working-directory: ${{ env.TF_WORKING_DIR }}
-      #   run: |
-      #     terraform workspace select "${GITHUB_REF_NAME}" || terraform workspace new "${GITHUB_REF_NAME}"
-            
 
       - name: Terraform Validate
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform validate
 
-      
+      # - name: Terraform Import
+      #   working-directory: ${{ env.TF_WORKING_DIR }}
+      #   run: terraform import aws_secretsmanager_secret.shopify_admin arn:aws:secretsmanager:us-west-2:438465144115:secret:shopify/admin-xlmuwX
+
       - name: Terraform Plan
         id: plan
         working-directory: ${{ env.TF_WORKING_DIR }}
@@ -121,48 +90,48 @@ jobs:
           TF_VAR_shopify_myshopify_domain: ${{ secrets.SHOPIFY_MYSHOPIFY_DOMAIN }}
           TF_VAR_mcp_bearer: ${{ secrets.MCP_BEARER }}
           TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
-        run: terraform plan -out=tfplan -lock-timeout=5m
+        run: terraform plan -out=tfplan
 
-      - name: Terraform Apply
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform apply -help -auto-approve tfplan -lock-timeout=5m tfplan
+      # - name: Terraform Apply
+      #   working-directory: ${{ env.TF_WORKING_DIR }}
+      #   run: terraform apply -auto-approve tfplan
 
       # - name: Grab Terraform outputs
       #   id: tfout
-      #   shell: bash
       #   working-directory: ${{ env.TF_WORKING_DIR }}
-      #   # env:
-      #   #   SHOPIFY_ADMIN_TOKEN: ${{ secrets.SHOPIFY_ADMIN_TOKEN }}
       #   run: |
-      #     echo "secret_name=$(terraform output -raw secret_name)"
-      #     echo "mcp_full_url=$(terraform output -raw mcp_full_url)"
+      #     echo "secret_name=$(terraform output -raw secret_name)" >> $GITHUB_OUTPUT
+      #     echo "mcp_full_url=$(terraform output -raw mcp_full_url)" >> $GITHUB_OUTPUT
 
       # - name: Put Shopify Admin token into Secrets Manager
       #   shell: bash
       #   env:
       #     SECRET_NAME: ${{ steps.tfout.outputs.secret_name }}
       #     SHOPIFY_ADMIN_TOKEN: ${{ secrets.SHOPIFY_ADMIN_TOKEN }}
-      #     MCP_URL: ${{ steps.tfout.outputs.mcp_full_url }}
       #   run: |
       #     set -euo pipefail
       #     aws secretsmanager put-secret-value \
       #       --secret-id "${SECRET_NAME}" \
       #       --secret-string "${SHOPIFY_ADMIN_TOKEN}"
 
-      - name: Smoke test MCP (tools/list)
-        shell: bash
-        env:
-          MCP_URL: ${{ steps.tfout.outputs.mcp_full_url }}
-          MCP_BEARER: ${{ secrets.MCP_BEARER }}
-        run: |
-          set -euo pipefail
-          echo "Hitting: ${MCP_URL}"
-          curl -sX POST "${MCP_URL}" \
-            -H "Authorization: Bearer ${MCP_BEARER}" \
-            -H "Content-Type: application/json" \
-            -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | jq .
+      # - name: Smoke test MCP (tools/list)
+      #   shell: bash
+      #   env:
+      #     MCP_URL: ${{ steps.tfout.outputs.mcp_full_url }}
+      #     MCP_BEARER: ${{ secrets.MCP_BEARER }}
+      #   run: |
+      #     set -euo pipefail
+      #     echo "Hitting: ${MCP_URL}"
+      #     curl -sX POST "${MCP_URL}" \
+      #       -H "Authorization: Bearer ${MCP_BEARER}" \
+      #       -H "Content-Type: application/json" \
+      #       -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | jq .
 
-      - name: Show connector URL
-        run: |
-          echo ""
+      # - name: Show connector URL
+      #   run: |
+      #     echo ""
       
+           
+          
+
+  

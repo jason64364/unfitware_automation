@@ -23,7 +23,7 @@ variable "shopify_api_version" {
 }
 
 variable "secret_name" {
-  description = "Secrets Manager secret name (container only; add value in console after apply)"
+  description = "Secrets Manager secret name (container only; after Terraform apply, manually add the secret value in AWS Secrets Manager)"
   type        = string
   default     = "shopify/admin"
 }
