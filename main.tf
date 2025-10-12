@@ -18,9 +18,7 @@ provider "aws" {
   region = var.aws_region
 }
 
-# module "mcp" {
-#  source = "./module/mcp/"
-# }
+# Declare modules if they exist
 
 ############################
 # Secrets Manager (container only — value added later in console)

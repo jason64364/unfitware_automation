@@ -129,7 +129,10 @@ jobs:
 
       - name: Grab Terraform outputs
         id: tfout
+        shell: bash
         working-directory: ${{ env.TF_WORKING_DIR }}
+        env:
+          SHOPIFY_ADMIN_TOKEN: ${{ secrets.SHOPIFY_ADMIN_TOKEN }}
         run: |
           echo "secret_name=$(terraform output -raw secret_name)" >> $GITHUB_OUTPUT
           echo "mcp_full_url=$(terraform output -raw mcp_full_url)" >> $GITHUB_OUTPUT
