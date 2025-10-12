@@ -1,6 +1,6 @@
 name: Run AWS Login with OIDC and Deploy AWS MCP Infrastructure
 
-# Trigger - 37
+# Trigger - 38
 on: [push] 
 
 concurrency:
@@ -162,33 +162,3 @@ jobs:
         run: |
           echo ""
       
-      
-      
-      
-      
-      
-      
-      # Run the Terraform main.tf  
-     # - name: Run Terraform      
-     #  run: |
-     #     cat $GITHUB_ENV
-     #     terraform init
-     #     terraform plan
-     #     terraform apply -auto-approve
-    #    # aws secretsmanager create-secret --name demo-secret --description "demo secret description" --secret-string "demo$ecret1234"
-
-    #  - name: AWS Secrets Manager GitHub Action
-        # You may pin to the exact commit or the version.
-        # uses: aws-actions/aws-secretsmanager-get-secrets@1d6311ab61b4856de027ff508aac818ddc1e141b
-     #   uses: aws-actions/aws-secretsmanager-get-secrets@v2.0.7
-    #    with:
-          # One or more secret names, secret ARNs, or secret prefixes to retrieve
-    #      secret-ids: 'arn:aws:secretsmanager:us-west-2:438465144115:secret:demo-secret-LE0Sh5' 
-          # (Optional) If true, JSON secrets will be deserialized, creating a secret environment variable for each key-value pair.
-    #      parse-json-secrets: 'true'
-          # (Optional) Transforms environment variable name. Options: uppercase, lowercase, none. Default value: uppercase.
-    #      name-transformation: 'uppercase'
-           
-          
-
-  
