@@ -134,8 +134,8 @@ jobs:
         env:
           SHOPIFY_ADMIN_TOKEN: ${{ secrets.SHOPIFY_ADMIN_TOKEN }}
         run: |
-          echo "secret_name=$(terraform output -raw secret_name)" >> $GITHUB_OUTPUT
-          echo "mcp_full_url=$(terraform output -raw mcp_full_url)" >> $GITHUB_OUTPUT
+          echo "secret_name=$(terraform output -raw secret_name)" >> $SECRET_NAME
+          echo "mcp_full_url=$(terraform output -raw mcp_full_url)" >> $MCP_FULL_URL
 
       - name: Put Shopify Admin token into Secrets Manager
         shell: bash
