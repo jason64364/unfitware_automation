@@ -140,9 +140,9 @@ jobs:
       - name: Put Shopify Admin token into Secrets Manager
         shell: bash
         env:
-          SECRET_NAME: ${{ steps.tfout.outputs.secret_name }}
+          SECRET_NAME: ${{ outputs.secret_name }}
           SHOPIFY_ADMIN_TOKEN: ${{ secrets.SHOPIFY_ADMIN_TOKEN }}
-          MCP_URL: ${{ steps.tfout.outputs.mcp_full_url }}  
+          MCP_URL: ${{ outputs.mcp_full_url }}
         run: |
           set -euo pipefail
           aws secretsmanager put-secret-value \
