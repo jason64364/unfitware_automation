@@ -127,32 +127,28 @@ jobs:
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform apply -help -auto-approve tfplan -lock-timeout=5m tfplan
 
-      # - name: Grab Terraform outputs
-      #   id: tfout
-      #   shell: bash
-      #   working-directory: ${{ env.TF_WORKING_DIR }}
-      #   # env:
-      #   #   SHOPIFY_ADMIN_TOKEN: ${{ secrets.SHOPIFY_ADMIN_TOKEN }}
-      #   run: |
-      #     echo "secret_name=$(terraform output -raw secret_name)"
-      #     echo "mcp_full_url=$(terraform output -raw mcp_full_url)"
+      - name: Grab Terraform outputs
+        id: tfout
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: |
+           echo "secret_name=$(terraform output -raw secret_name)" >> $GITHUB_OUTPUT
+           echo "mcp_full_url=$(terraform output -raw mcp_full_url)" >> $GITHUB_OUTPUT
 
-      # - name: Put Shopify Admin token into Secrets Manager
-      #   shell: bash
-      #   env:
-      #     SECRET_NAME: ${{ steps.tfout.outputs.secret_name }}
-      #     SHOPIFY_ADMIN_TOKEN: ${{ secrets.SHOPIFY_ADMIN_TOKEN }}
-      #     MCP_URL: ${{ steps.tfout.outputs.mcp_full_url }}
-      #   run: |
-      #     set -euo pipefail
-      #     aws secretsmanager put-secret-value \
-      #       --secret-id "${SECRET_NAME}" \
-      #       --secret-string "${SHOPIFY_ADMIN_TOKEN}"
+      - name: Put Shopify Admin token into Secrets Manager
+        env:
+       #    SECRET_NAME: ${{ steps.tfout.outputs.secret_name }}
+           SHOPIFY_ADMIN_TOKEN: ${{ secrets.SHOPIFY_ADMIN_TOKEN }}
+       #    MCP_URL: ${{ steps.tfout.outputs.mcp_full_url }}
+        run: |
+           set -euo pipefail
+           aws secretsmanager put-secret-value \
+             --secret-id "${steps.tfout.outputs.secret_name}" \
+             --secret-string "${SHOPIFY_ADMIN_TOKEN}"
 
       - name: Smoke test MCP (tools/list)
         shell: bash
         env:
-          MCP_URL: ${{ steps.tfout.outputs.mcp_full_url }}
+          MCP_URL: ${{steps.tfout.outputs.mcp_full_url }}
           MCP_BEARER: ${{ secrets.MCP_BEARER }}
         run: |
           set -euo pipefail
