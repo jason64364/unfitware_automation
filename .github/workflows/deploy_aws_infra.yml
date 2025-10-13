@@ -125,7 +125,9 @@ jobs:
 
       - name: Terraform Apply
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform apply -auto-approve tfplan -lock-timeout=5m tfplan
+        run: terraform apply -auto-approve tfplan -lock-timeout=5m
+        # run: terraform apply -auto-approve tfplan -lock-timeout=5m tfplan
+
         ##############################
         # DEBUGGING STEP REMOVE LATER
         #############################
