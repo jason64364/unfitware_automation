@@ -145,7 +145,7 @@ jobs:
            set -euo pipefail
            aws secretsmanager put-secret-value \
              --secret-id "${steps.tfout.outputs.secret_name}" \
-             --secret-string "${SHOPIFY_ADMIN_TOKEN}"
+             --secret-string "${secrets.SHOPIFY_ADMIN_TOKEN}"
 
       - name: Smoke test MCP (tools/list)
         shell: bash
