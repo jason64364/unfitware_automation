@@ -100,14 +100,7 @@ jobs:
           else
             echo "🆕 Workspace '${WORKSPACE}' does not exist. Creating it..."
             terraform workspace new "${WORKSPACE}"
-          fi
-     
-
-      # - name: Select workspace
-      #   working-directory: ${{ env.TF_WORKING_DIR }}
-      #   run: |
-      #     terraform workspace select "${GITHUB_REF_NAME}" || terraform workspace new "${GITHUB_REF_NAME}"
-            
+          fi        
 
       - name: Terraform Validate
         working-directory: ${{ env.TF_WORKING_DIR }}
@@ -126,7 +119,6 @@ jobs:
       - name: Terraform Apply
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform apply -auto-approve tfplan
-        # run: terraform apply -auto-approve tfplan -lock-timeout=5m tfplan
 
         ##############################
         # DEBUGGING STEP REMOVE LATER
