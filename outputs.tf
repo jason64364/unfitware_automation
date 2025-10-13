@@ -10,7 +10,7 @@ output "mcp_full_url" {
 
 output "secret_name" {
   description = "Secrets Manager secret name"
-  value       = aws_secretsmanager_secret.shopify/admin
+  value       = aws_secretsmanager_secret.shopify_admin.name
   sensitive   = true
 }
 
