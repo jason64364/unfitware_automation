@@ -126,7 +126,13 @@ jobs:
       - name: Terraform Apply
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform apply -help -auto-approve tfplan -lock-timeout=5m tfplan
-
+        ##############################
+        # DEBUGGING STEP REMOVE LATER
+        #############################
+        
+      - name: Show Terraform outputs
+        run: terraform output || true
+  
       - name: Grab Terraform outputs
         id: tfout
         working-directory: ${{ env.TF_WORKING_DIR }}
