@@ -134,6 +134,8 @@ jobs:
 
       - name: Show Terraform outputs
         run: terraform output || true
+
+        ##############################
   
       - name: Grab Terraform outputs
         id: tfout
