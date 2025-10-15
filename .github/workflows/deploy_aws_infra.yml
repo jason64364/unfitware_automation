@@ -155,9 +155,9 @@ jobs:
           MCP_BEARER: ${{ secrets.MCP_BEARER }}
         run: |
           set -euo pipefail
-          echo "Hitting: ${MCP_URL}"
-          curl -sX POST "${MCP_URL}" \
-            -H "Authorization: Bearer ${MCP_BEARER}" \
+          echo "Hitting: $MCP_URL"
+          curl -sX POST "$MCP_URL" \
+            -H "Authorization: Bearer $MCP_BEARER" \
             -H "Content-Type: application/json" \
             -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | jq .
 
