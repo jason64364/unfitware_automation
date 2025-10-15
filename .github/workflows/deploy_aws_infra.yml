@@ -155,9 +155,14 @@ jobs:
           MCP_URL: "https://aws_apigatewayv2_api.http.api_endpoint/mcp"
           MCP_BEARER: ${{ secrets.MCP_BEARER }}
         run: |
+          len=$(printf %s "${MCP_BEARER-}" | wc -c)
+          if [ "$len" -eq 0 ]; then
+          echo "MCP_BEARER is empty or unset"; exit 1
+          fi
+          echo "MCP_BEARER length: $len"
+
           set -euo pipefail
           echo "Hitting: $MCP_URL"
-          echo -n "$MCP_BEARER" | wc -c
           curl -sX POST "$MCP_URL" \
             -H "Authorization: Bearer $MCP_BEARER" \
             -H "Content-Type: application/json" \
