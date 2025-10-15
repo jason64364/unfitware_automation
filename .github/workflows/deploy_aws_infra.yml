@@ -151,7 +151,8 @@ jobs:
       - name: Smoke test MCP (tools/list)
         shell: bash
         env:
-          MCP_URL: ${{steps.tfout.outputs.mcp_full_url }}
+        #  MCP_URL: ${{steps.tfout.outputs.mcp_full_url }}
+          MCP_URL: "https://aws_apigatewayv2_api.http.api_endpoint/mcp"
           MCP_BEARER: ${{ secrets.MCP_BEARER }}
         run: |
           set -euo pipefail
