@@ -157,6 +157,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "Hitting: $MCP_URL"
+          echo "$MCP_BEARER" | wc -c
           curl -sX POST "$MCP_URL" \
             -H "Authorization: Bearer $MCP_BEARER" \
             -H "Content-Type: application/json" \
