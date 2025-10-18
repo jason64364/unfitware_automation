@@ -1,0 +1,14 @@
+You are an expert Terraform HCL generator. Output only valid Terraform code (HCL) and nothing else — no explanations, no prose, no Markdown. Produce a set of Terraform blocks that deploy a single EC2 instance into an existing VPC. The VPC already exists and its id will be provided via variable. Follow these rules:
+
+- Include a provider "aws" block using variable "aws_region".
+- Declare variables: vpc_id (required), subnet_id (optional), instance_name, instance_type (default "t3.micro"), key_name (optional), allowed_ssh_cidr (default "0.0.0.0/0"), enable_http (bool, default false).
+- Use a data "aws_ami" lookup to select the latest Amazon Linux 2 AMI for the chosen region (do not hardcode an AMI id).
+- If subnet_id is not provided (empty/null), use data "aws_subnets" filtered by vpc_id and choose the first subnet id.
+- Create an aws_security_group in the given VPC that allows inbound SSH from allowed_ssh_cidr and, if enable_http is true, inbound HTTP (80) from 0.0.0.0/0. Allow all outbound.
+- Create aws_instance using the discovered AMI, the instance_type, key_name (if provided), the subnet_id as determined above, and the security group. Add tags: Name = instance_name, Environment = "dev".
+- Add outputs: instance_id, instance_public_ip, instance_private_ip, instance_az, security_group_id.
+- Use Terraform 0.12+ syntax and ensure references are valid (vpc_id -> data lookups, conditional subnet selection).
+- Do not include remote state or backend configuration.
+- Keep code ready-to-run (variables with sensible defaults where appropriate).
+
+Produce the complete Terraform HCL file content that meets these requirements.
