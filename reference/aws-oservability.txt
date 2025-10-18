@@ -1,0 +1,5 @@
+aws cloudformation create-stack /
+--stack-name Observability-Workshop /
+--template-body file://codepipeline-stack.yaml /
+--capabilities CAPABILITY_NAMED_IAM /
+--parameters ParameterKey=UserRoleArn,ParameterValue=$(aws iam get-role --role-name $(aws sts get-caller-identity --query Arn --output text | awk -F/ '{print $(NF-1)}') --query Role.Arn --output text)
