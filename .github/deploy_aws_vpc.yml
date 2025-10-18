@@ -1,5 +1,5 @@
-name: Run AWS Login with OIDC and Deploy AWS Infrastructure
-# Trigger - 57
+name: Run AWS Login with OIDC and Deploy AWS VPC
+# Trigger - 0
 on: [push] 
 
 concurrency:
@@ -15,8 +15,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      TF_STATE_BUCKET: tf-state-unfitware-2025-1
-      TF_STATE_DYNAMODB_TABLE: tf-state-locks
+      TF_STATE_BUCKET: tf-state-unfitware-vpc-2025-1
+      TF_STATE_DYNAMODB_TABLE: tf-state-unfitware-vpc-locks
       TF_WORKING_DIR: .
 
     # Sequence of tasks that will be executed as part of the job
@@ -34,11 +34,6 @@ jobs:
           audience: sts.amazonaws.com
           retry-max-attempts: 3
 
-      # - name: Read OIDC Token
-      #   run: echo $ACTIONS_ID_TOKEN_REQUEST_URL
-      # - name: Read OIDC Token
-      #   run: echo $ACTIONS_ID_TOKEN_REQUEST_TOKEN
-
       - name: Ensure S3 bucket and DynamoDB table for Terraform state
         shell: bash
         run: |
@@ -51,6 +46,7 @@ jobs:
           # Create S3 bucket if missing
           if ! aws s3api head-bucket --bucket "$BUCKET" 2>/dev/null; then
             aws s3api create-bucket --bucket "$BUCKET" --region "$REGION" --create-bucket-configuration LocationConstraint="$REGION"
+          #    $( [ "$REGION" != "us-west-2" ] && echo --create-bucket-configuration LocationConstraint="$REGION" )
           fi
           aws s3api put-bucket-versioning --bucket "$BUCKET" --versioning-configuration Status=Enabled
 
@@ -103,70 +99,3 @@ jobs:
       - name: Terraform Validate
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform validate
-
-      
-      - name: Terraform Plan
-        id: plan
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        env:
-          TF_VAR_shopify_myshopify_domain: ${{ secrets.SHOPIFY_MYSHOPIFY_DOMAIN }}
-          TF_VAR_mcp_bearer: ${{ secrets.MCP_BEARER }}
-          TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
-        run: terraform plan -out=tfplan -lock-timeout=5m
-
-      - name: Terraform Apply
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform apply -auto-approve tfplan
-
-        ##############################
-        # DEBUGGING STEP REMOVE LATER
-        #############################
-
-      - name: Show Terraform outputs
-        run: terraform output || true
-
-        ##############################
-  
-      - name: Grab Terraform outputs
-        id: tfout
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: |
-           echo "secret_name=$(terraform output -raw secret_name)" >> $GITHUB_OUTPUT
-           echo "mcp_full_url=$(terraform output -raw mcp_full_url)" >> $GITHUB_OUTPUT
-
-      - name: Put Shopify Admin token into Secrets Manager
-        id: putsecret
-        shell: bash
-        env:
-           SECRET_ID: ${{ steps.tfout.outputs.secret_name }}
-           SHOPIFY_ADMIN_TOKEN: ${{ secrets.SHOPIFY_ADMIN_TOKEN }}
-        run: |
-           set -euo pipefail
-           aws secretsmanager put-secret-value \
-             --secret-id "$SECRET_ID" \
-             --secret-string "$SHOPIFY_ADMIN_TOKEN"
-
-      - name: Smoke test MCP (tools/list)
-        shell: bash
-        env:
-        #  MCP_URL: ${{steps.tfout.outputs.mcp_full_url }}
-          MCP_URL: "https://aws_apigatewayv2_api.http.api_endpoint/mcp"
-          MCP_BEARER: ${{ secrets.MCP_BEARER }}
-        run: |
-          len=$(printf %s "${MCP_BEARER}" | wc -c)
-          if [ "$len" -eq 0 ]; then
-          echo "MCP_BEARER is empty or unset"; exit 1
-          fi
-          echo "MCP_BEARER length: $len"
-
-          set -euo pipefail
-          echo "Hitting: $MCP_URL"
-          curl -sX POST "$MCP_URL" \
-            -H "Authorization: Bearer $MCP_BEARER" \
-            -H "Content-Type: application/json" \
-            -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | jq .
-
-      - name: Show connector URL
-        run: |
-          echo ""
-      
