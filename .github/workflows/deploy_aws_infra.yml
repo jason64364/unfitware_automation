@@ -1,5 +1,5 @@
 name: Run AWS Login with OIDC and Deploy AWS Infrastructure
-# Trigger - 57
+# Trigger - 58
 on: [push] 
 
 concurrency:
