@@ -1,8 +1,76 @@
 <!doctype html>
 <html>
-  <head><meta charset="utf-8"><title>Hello from Docker</title></head>
-  <body style="font-family: system-ui; margin: 3rem;">
-    <h1>It works 🎉</h1>
+  <head>
+    <meta charset="utf-8">
+    <title>Client Info</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 3rem;
+        background: #f9f9f9;
+        color: #222;
+      }
+      h1 { margin-bottom: 1rem; }
+      .info {
+        background: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        max-width: 600px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #eee;
+      }
+      .row:last-child { border-bottom: none; }
+      .label { font-weight: 600; }
+      .value { font-family: monospace; }
+    </style>
+  </head>
+  <body>
+    <h1>🔍 Your Client Information</h1>
     <p>This page is served by Nginx in a Docker container.</p>
+    <div class="info" id="clientInfo">
+      <div class="row"><span class="label">IP Address</span><span class="value" id="ip">Loading...</span></div>
+      <div class="row"><span class="label">Browser</span><span class="value" id="browser"></span></div>
+      <div class="row"><span class="label">OS</span><span class="value" id="os"></span></div>
+      <div class="row"><span class="label">User Agent</span><span class="value" id="ua"></span></div>
+      <div class="row"><span class="label">Viewport</span><span class="value" id="viewport"></span></div>
+      <div class="row"><span class="label">Timezone</span><span class="value" id="timezone"></span></div>
+      <div class="row"><span class="label">Language</span><span class="value" id="language"></span></div>
+    </div>
+
+    <script>
+      // Get IP using a public API
+      fetch('https://api.ipify.org?format=json')
+        .then(r => r.json())
+        .then(data => document.getElementById('ip').textContent = data.ip)
+        .catch(() => document.getElementById('ip').textContent = 'Unavailable');
+
+      // User agent details
+      const ua = navigator.userAgent;
+      document.getElementById('ua').textContent = ua;
+
+      // Simple browser detection
+      const browserMatch = ua.match(/(Firefox|Edg|Chrome|Safari)/);
+      document.getElementById('browser').textContent = browserMatch ? browserMatch[0] : 'Unknown';
+
+      // OS detection
+      const osMatch = ua.match(/\(([^)]+)\)/);
+      document.getElementById('os').textContent = osMatch ? osMatch[1] : 'Unknown';
+
+      // Viewport size
+      function updateViewport() {
+        document.getElementById('viewport').textContent = `${window.innerWidth} × ${window.innerHeight}`;
+      }
+      updateViewport();
+      window.addEventListener('resize', updateViewport);
+
+      // Timezone & language
+      document.getElementById('timezone').textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      document.getElementById('language').textContent = navigator.language || 'Unknown';
+    </script>
   </body>
 </html>
