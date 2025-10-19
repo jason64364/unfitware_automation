@@ -99,3 +99,20 @@ jobs:
       - name: Terraform Validate
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform validate
+
+        ##################################
+        # Terraform Plan and Apply
+        ##################################
+
+      - name: Terraform Plan
+        id: plan
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        # env:
+        #   TF_VAR_shopify_myshopify_domain: ${{ secrets.SHOPIFY_MYSHOPIFY_DOMAIN }}
+        #   TF_VAR_mcp_bearer: ${{ secrets.MCP_BEARER }}
+        #   TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
+        run: terraform plan -out=tfplan -lock-timeout=5m
+
+      - name: Terraform Apply
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform apply -auto-approve tfplan
