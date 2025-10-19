@@ -17,7 +17,7 @@ jobs:
     env:
       TF_STATE_BUCKET: tf-state-unfitware-vpc-2025-1
       TF_STATE_DYNAMODB_TABLE: tf-state-unfitware-vpc-locks
-      TF_WORKING_DIR: ./mytfcode/stacks/vpc/
+      TF_WORKING_DIR: .
 
     # Sequence of tasks that will be executed as part of the job
     steps:
